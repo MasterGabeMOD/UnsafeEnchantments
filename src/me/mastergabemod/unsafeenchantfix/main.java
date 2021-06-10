@@ -57,7 +57,7 @@ public class main implements Runnable {
                 Map.Entry entry = enchantmentIntegerEntry;
                 Enchantment e = (Enchantment) entry.getKey();
                 int level = (Integer) entry.getValue();
-                if (level > 5)
+                if (level > 6)
                     list.add(e);
             }
         }
