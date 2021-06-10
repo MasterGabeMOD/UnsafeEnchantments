@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="UnsafeEnchantFix:jar">
+    <output-path>$USER_HOME$/Documents/MC Server/1.16.5 Spigot/plugins</output-path>
+    <root id="archive" name="UnsafeEnchantFix.jar">
+      <element id="module-output" name="UnsafeEnchantFix" />
+      <element id="library" level="module" name="spigot (2).jar" module-name="UnsafeEnchantFix" />
+      <element id="extracted-dir" path="$USER_HOME$/Documents/MC Server/1.16.5 Spigot/server.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
