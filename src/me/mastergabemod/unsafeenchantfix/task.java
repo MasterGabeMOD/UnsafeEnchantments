@@ -10,6 +10,6 @@ public class task extends JavaPlugin {
 
     }
     public void onEnable() {
-        Bukkit.getScheduler().runTaskTimer(this, new main(), 100L, 100L);
+        Bukkit.getScheduler().runTaskTimer(this, new Main(), 100L, 100L);
     }
 }
