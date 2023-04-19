@@ -1,6 +1,7 @@
 name: UnsafeEnchantments
 main: me.mastergabemod.unsafeenchantfix.task
 version: 1.4
+api-version: 1.19
 author: MasterGabeMOD
 authors:
   - Akutasan
