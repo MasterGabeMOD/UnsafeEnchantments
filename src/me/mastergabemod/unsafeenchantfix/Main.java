@@ -49,10 +49,11 @@ public class Main implements Runnable {
             for (Map.Entry<Enchantment, Integer> entry : it.getEnchantments().entrySet()) {
                 Enchantment e = entry.getKey();
                 int level = entry.getValue();
-                if (level > e.getMaxLevel() || !e.getItemTarget().includes(it.getType())) {
+                if (level > e.getMaxLevel() || !(e.canEnchantItem(it) && it.getItemMeta().hasEnchants())) {
                     it.removeEnchantment(e);
                 }
             }
         }
     }
+
 }
