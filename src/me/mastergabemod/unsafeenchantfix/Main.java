@@ -2,7 +2,6 @@ package me.mastergabemod.unsafeenchantfix;
 
 import java.util.Map;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -15,20 +14,16 @@ public class Main implements Runnable {
 
     public void run() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.getGameMode() != GameMode.CREATIVE) {
-                continue; // Ignore players in Survival mode
-            }
             for (ItemStack it : player.getInventory().getArmorContents()) {
                 removeUnsafeEnchantments(it);
             }
             for (ItemStack it : player.getInventory().getContents()) {
                 if (it != null && it.getType() == Material.POTION) {
                     if (!isVanillaPotion(it)) {
-                        // Remove illegal potion by replacing it with empty bottle
                         player.getInventory().removeItem(it);
                         player.getInventory().addItem(new ItemStack(Material.GLASS_BOTTLE));
                     } else {
-                        it.getEnchantments().clear(); // Remove all enchantments from potions
+                        it.getEnchantments().clear();
                     }
                 } else {
                     removeUnsafeEnchantments(it);
