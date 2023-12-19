@@ -1,7 +1,10 @@
 name: UnsafeEnchantments
-main: me.mastergabemod.unsafeenchantfix.task
-version: 1.4
-api-version: 1.19
+main: me.mastergabemod.unsafeenchantfix.Main
+version: 1.5
+api-version: 1.20
 author: MasterGabeMOD
-authors:
-  - Akutasan
+commands:
+  unsafecheck:
+    description: Manually check an item for unsafe enchantments
+    usage: /unsafecheck
+    permission: unsafecheck.admin
