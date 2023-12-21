@@ -18,9 +18,9 @@ public class Main extends JavaPlugin implements Runnable {
 
     public void onEnable() {
         instance = this;
-        getServer().getScheduler().runTaskTimerAsynchronously(this, this, 200L, 200L); // Run the task every second
+        getServer().getScheduler().runTaskTimerAsynchronously(this, this, 100L, 100L);
+        
 
-        // Register the command
         getCommand("unsafecheck").setExecutor(new UnsafeCheckCommand());
     }
 
@@ -40,7 +40,6 @@ public class Main extends JavaPlugin implements Runnable {
                             player.getInventory().removeItem(it);
                             player.getInventory().addItem(new ItemStack(Material.GLASS_BOTTLE));
                         } else {
-                            // Check if the item has enchantments before trying to clear them
                             if (it.getEnchantments() != null && !it.getEnchantments().isEmpty()) {
                                 it.getEnchantments().clear();
                             }
@@ -58,7 +57,6 @@ public class Main extends JavaPlugin implements Runnable {
         PotionData data = meta.getBasePotionData();
         PotionType type = data.getType();
         
-        // Check for illegal enchantments on potions
         if (it.getEnchantments() != null && !it.getEnchantments().isEmpty()) {
             return false;
         }
