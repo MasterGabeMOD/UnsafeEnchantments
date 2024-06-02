@@ -19,6 +19,7 @@ public class Main extends JavaPlugin implements Runnable {
     public void onEnable() {
         instance = this;
         getServer().getScheduler().runTaskTimerAsynchronously(this, this, 100L, 100L);
+        
 
         getCommand("unsafecheck").setExecutor(new UnsafeCheckCommand());
     }
@@ -29,59 +30,47 @@ public class Main extends JavaPlugin implements Runnable {
 
     public void run() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            checkInventory(player);
-        }
-    }
-
-    private void checkInventory(Player player) {
-        for (ItemStack item : player.getInventory().getArmorContents()) {
-            checkAndRemoveUnsafeItem(player, item);
-        }
-        for (ItemStack item : player.getInventory().getContents()) {
-            if (item != null) {
-                checkAndRemoveUnsafeItem(player, item);
+            for (ItemStack it : player.getInventory().getArmorContents()) {
+                removeUnsafeEnchantments(it);
             }
-        }
-    }
-
-    private void checkAndRemoveUnsafeItem(Player player, ItemStack item) {
-        if (item != null) {
-            if (item.getType() == Material.POTION) {
-                if (!isVanillaPotion(item)) {
-                    player.getInventory().remove(item);
-                    player.getInventory().addItem(new ItemStack(Material.GLASS_BOTTLE));
-                } else {
-                    clearUnsafeEnchantments(item);
+            for (ItemStack it : player.getInventory().getContents()) {
+                if (it != null) {
+                    if (it.getType() == Material.POTION) {
+                        if (!isVanillaPotion(it)) {
+                            player.getInventory().removeItem(it);
+                            player.getInventory().addItem(new ItemStack(Material.GLASS_BOTTLE));
+                        } else {
+                            if (it.getEnchantments() != null && !it.getEnchantments().isEmpty()) {
+                                it.getEnchantments().clear();
+                            }
+                        }
+                    } else {
+                        removeUnsafeEnchantments(it);
+                    }
                 }
-            } else {
-                clearUnsafeEnchantments(item);
             }
         }
     }
 
-    public boolean isVanillaPotion(ItemStack item) {
-        if (!(item.getItemMeta() instanceof PotionMeta)) {
-            return false;
-        }
-
-        PotionMeta meta = (PotionMeta) item.getItemMeta();
+    public boolean isVanillaPotion(ItemStack it) {
+        PotionMeta meta = (PotionMeta) it.getItemMeta();
         PotionData data = meta.getBasePotionData();
         PotionType type = data.getType();
-
-        if (!item.getEnchantments().isEmpty()) {
+        
+        if (it.getEnchantments() != null && !it.getEnchantments().isEmpty()) {
             return false;
         }
-
+        
         return type == PotionType.AWKWARD || type == PotionType.MUNDANE || type == PotionType.THICK || type == PotionType.WATER;
     }
 
-    public void clearUnsafeEnchantments(ItemStack item) {
-        if (item != null && item.getType() != Material.AIR) {
-            Map<Enchantment, Integer> enchantments = item.getEnchantments();
-            for (Enchantment enchantment : enchantments.keySet()) {
-                int level = enchantments.get(enchantment);
-                if (level > enchantment.getMaxLevel() || !enchantment.canEnchantItem(item)) {
-                    item.removeEnchantment(enchantment);
+    public void removeUnsafeEnchantments(ItemStack it) {
+        if (it != null && it.getType() != Material.AIR) {
+            for (Map.Entry<Enchantment, Integer> entry : it.getEnchantments().entrySet()) {
+                Enchantment e = entry.getKey();
+                int level = entry.getValue();
+                if (level > e.getMaxLevel() || !(e.canEnchantItem(it) && it.getItemMeta().hasEnchants())) {
+                    it.removeEnchantment(e);
                 }
             }
         }
