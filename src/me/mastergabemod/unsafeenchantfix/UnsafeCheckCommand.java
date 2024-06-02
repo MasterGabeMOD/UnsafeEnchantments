@@ -34,7 +34,7 @@ public class UnsafeCheckCommand implements CommandExecutor {
             if (isSafe) {
                 player.sendMessage(ChatColor.GREEN + "Item checked successfully. Item appears to be safe.");
             } else {
-                Main.getInstance().removeUnsafeEnchantments(itemInHand);
+                Main.getInstance().clearUnsafeEnchantments(itemInHand);
                 clearItemMetadata(itemInHand);
                 player.sendMessage(ChatColor.RED + "Item checked. Item wasn't safe. Enchantments, metadata, lore, and display name cleared.");
             }
@@ -55,9 +55,9 @@ public class UnsafeCheckCommand implements CommandExecutor {
 
     private boolean hasUnsafeEnchantments(ItemStack item) {
         for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
-            Enchantment e = entry.getKey();
+            Enchantment enchantment = entry.getKey();
             int level = entry.getValue();
-            if (level > e.getMaxLevel() || !(e.canEnchantItem(item) && item.getItemMeta().hasEnchants())) {
+            if (level > enchantment.getMaxLevel() || !enchantment.canEnchantItem(item)) {
                 return true;
             }
         }
