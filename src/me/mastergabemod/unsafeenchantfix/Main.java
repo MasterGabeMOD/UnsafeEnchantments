@@ -4,6 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -12,21 +16,23 @@ import org.bukkit.potion.PotionType;
 
 import java.util.Map;
 
-public class Main extends JavaPlugin implements Runnable {
+public class Main extends JavaPlugin implements Runnable, Listener {
 
     private static Main instance;
 
+    @Override
     public void onEnable() {
         instance = this;
         getServer().getScheduler().runTaskTimerAsynchronously(this, this, 100L, 100L);
-
         getCommand("unsafecheck").setExecutor(new UnsafeCheckCommand());
+        getServer().getPluginManager().registerEvents(this, this);
     }
 
     public static Main getInstance() {
         return instance;
     }
 
+    @Override
     public void run() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             checkInventory(player);
@@ -83,6 +89,16 @@ public class Main extends JavaPlugin implements Runnable {
                 if (level > enchantment.getMaxLevel() || !enchantment.canEnchantItem(item)) {
                     item.removeEnchantment(enchantment);
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        Inventory inventory = event.getInventory();
+        for (ItemStack item : inventory.getContents()) {
+            if (item != null) {
+                checkAndRemoveUnsafeItem((Player) event.getPlayer(), item);
             }
         }
     }
