@@ -1,0 +1,6 @@
+settings:
+  enable_checks: true
+  check_inventory: true
+  check_potions: true
+  clear_unsafe_enchantments: true
+  max_enchantment_level: 5
