@@ -5,6 +5,16 @@ api-version: 1.20
 author: MasterGabeMOD
 commands:
   unsafecheck:
-    description: Manually check an item for unsafe enchantments
-    usage: /unsafecheck
+    description: "Manually check an item for unsafe enchantments or reload the plugin configuration"
+    usage: "/unsafecheck [reload]"
     permission: unsafecheck.admin
+    permission-message: "You do not have permission to use this command."
+    aliases: [uc, checkunsafe]
+
+permissions:
+  unsafecheck.admin:
+    description: "Allows use of the /unsafecheck command to check items"
+    default: op
+  unsafecheck.admin.reload:
+    description: "Allows use of the /unsafecheck reload command to reload the configuration"
+    default: op

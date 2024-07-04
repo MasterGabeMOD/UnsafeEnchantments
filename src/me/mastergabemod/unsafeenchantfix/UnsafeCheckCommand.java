@@ -14,63 +14,74 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class UnsafeCheckCommand implements CommandExecutor {
 
-	 @Override
-	    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-	        if (!(sender instanceof Player)) {
-	            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
-	            return true;
-	        }
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            return true;
+        }
 
-	        Player player = (Player) sender;
+        Player player = (Player) sender;
 
-	        if (!player.hasPermission("unsafecheck.admin")) {
-	            player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
-	            return true;
-	        }
+        if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
+            if (player.hasPermission("unsafecheck.admin.reload")) {
+                Main.getInstance().reloadConfig();
+                player.sendMessage(ChatColor.GREEN + "Configuration reloaded successfully.");
+                return true;
+            } else {
+                player.sendMessage(ChatColor.RED + "You do not have permission to reload the configuration.");
+                return true;
+            }
+        }
 
-	        ItemStack itemInHand = player.getInventory().getItemInMainHand();
-	        if (itemInHand != null && itemInHand.getType() != Material.AIR) {
-	            boolean isSafe = checkItemSafety(itemInHand);
+        if (!player.hasPermission("unsafecheck.admin")) {
+            player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
+            return true;
+        }
 
-	            if (isSafe) {
-	                player.sendMessage(ChatColor.GREEN + "Item checked successfully. Item appears to be safe.");
-	            } else {
-	                Main.getInstance().clearUnsafeEnchantments(itemInHand);
-	                clearItemMetadata(itemInHand);
-	                player.sendMessage(ChatColor.RED + "Item checked. Item wasn't safe. Enchantments, metadata, lore, and display name cleared.");
-	            }
-	        } else {
-	            player.sendMessage(ChatColor.RED + "You must hold an item in your hand to check.");
-	        }
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
+        if (itemInHand != null && itemInHand.getType() != Material.AIR) {
+            boolean isSafe = checkItemSafety(itemInHand);
 
-	        return true;
-	    }
+            if (isSafe) {
+                player.sendMessage(ChatColor.GREEN + "Item checked successfully. Item appears to be safe.");
+            } else {
+                Main.getInstance().clearUnsafeEnchantments(itemInHand);
+                clearItemMetadata(itemInHand);
+                player.sendMessage(ChatColor.RED + "Item checked. Item wasn't safe. Enchantments, metadata, lore, and display name cleared.");
+            }
+        } else {
+            player.sendMessage(ChatColor.RED + "You must hold an item in your hand to check.");
+        }
 
-	    private boolean checkItemSafety(ItemStack item) {
-	        if (item.getType() == Material.POTION) {
-	            return Main.getInstance().isVanillaPotion(item);
-	        } else {
-	            return !hasUnsafeEnchantments(item);
-	        }
-	    }
+        return true;
+    }
 
-	    private boolean hasUnsafeEnchantments(ItemStack item) {
-	        for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
-	            Enchantment enchantment = entry.getKey();
-	            int level = entry.getValue();
-	            if (level > enchantment.getMaxLevel() || !enchantment.canEnchantItem(item)) {
-	                return true;
-	            }
-	        }
-	        return false;
-	    }
+    private boolean checkItemSafety(ItemStack item) {
+        if (item.getType() == Material.POTION) {
+            return Main.getInstance().isVanillaPotion(item);
+        } else {
+            return !hasUnsafeEnchantments(item);
+        }
+    }
 
-	    private void clearItemMetadata(ItemStack item) {
-	        ItemMeta meta = item.getItemMeta();
-	        if (meta != null) {
-	            meta.setDisplayName(null);
-	            meta.setLore(null);
-	            item.setItemMeta(meta);
-	        }
-	    }
-	}
+    private boolean hasUnsafeEnchantments(ItemStack item) {
+        for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
+            Enchantment enchantment = entry.getKey();
+            int level = entry.getValue();
+            if (level > enchantment.getMaxLevel() || !enchantment.canEnchantItem(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void clearItemMetadata(ItemStack item) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(null);
+            meta.setLore(null);
+            item.setItemMeta(meta);
+        }
+    }
+}

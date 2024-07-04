@@ -18,14 +18,15 @@ import org.bukkit.potion.PotionType;
 import java.util.Map;
 
 public class Main extends JavaPlugin implements Runnable, Listener {
+
     private static Main instance;
     private FileConfiguration config;
 
     @Override
     public void onEnable() {
         instance = this;
-        this.saveDefaultConfig();
-        config = this.getConfig();
+        saveDefaultConfig(); 
+        config = getConfig(); 
         getServer().getScheduler().runTaskTimerAsynchronously(this, this, 100L, 100L);
         getCommand("unsafecheck").setExecutor(new UnsafeCheckCommand());
         getServer().getPluginManager().registerEvents(this, this);
@@ -37,38 +38,36 @@ public class Main extends JavaPlugin implements Runnable, Listener {
 
     @Override
     public void run() {
-        if (config.getBoolean("settings.enable_checks")) {
+        if (config.getBoolean("checks.enable_checks")) {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                checkInventory(player);
+                if (config.getBoolean("checks.check_inventory")) {
+                    checkInventory(player);
+                }
             }
         }
     }
 
     private void checkInventory(Player player) {
-        if (config.getBoolean("settings.check_inventory")) {
-            for (ItemStack item : player.getInventory().getArmorContents()) {
+        for (ItemStack item : player.getInventory().getArmorContents()) {
+            if (item != null) {
                 checkAndRemoveUnsafeItem(player, item);
             }
-            for (ItemStack item : player.getInventory().getContents()) {
-                if (item != null) {
-                    checkAndRemoveUnsafeItem(player, item);
-                }
+        }
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null) {
+                checkAndRemoveUnsafeItem(player, item);
             }
         }
     }
 
     private void checkAndRemoveUnsafeItem(Player player, ItemStack item) {
-        if (item != null) {
-            if (item.getType() == Material.POTION && config.getBoolean("settings.check_potions")) {
-                if (!isVanillaPotion(item)) {
-                    player.getInventory().remove(item);
-                    player.getInventory().addItem(new ItemStack(Material.GLASS_BOTTLE));
-                } else {
-                    clearUnsafeEnchantments(item);
-                }
-            } else {
-                clearUnsafeEnchantments(item);
+        if (item.getType() == Material.POTION && config.getBoolean("checks.check_potions")) {
+            if (!isVanillaPotion(item)) {
+                player.getInventory().remove(item);
+                player.getInventory().addItem(new ItemStack(Material.GLASS_BOTTLE));
             }
+        } else if (config.getBoolean("checks.clear_unsafe_enchantments")) {
+            clearUnsafeEnchantments(item);
         }
     }
 
@@ -76,21 +75,18 @@ public class Main extends JavaPlugin implements Runnable, Listener {
         if (!(item.getItemMeta() instanceof PotionMeta)) {
             return false;
         }
-
         PotionMeta meta = (PotionMeta) item.getItemMeta();
         PotionData data = meta.getBasePotionData();
         PotionType type = data.getType();
-
-        return item.getEnchantments().isEmpty() && (type == PotionType.AWKWARD || type == PotionType.MUNDANE || type == PotionType.THICK || type == PotionType.WATER);
+        return type == PotionType.AWKWARD || type == PotionType.MUNDANE || type == PotionType.THICK || type == PotionType.WATER;
     }
 
     public void clearUnsafeEnchantments(ItemStack item) {
-        if (item != null && item.getType() != Material.AIR && config.getBoolean("settings.clear_unsafe_enchantments")) {
+        if (item != null && item.getType() != Material.AIR) {
             Map<Enchantment, Integer> enchantments = item.getEnchantments();
             for (Enchantment enchantment : enchantments.keySet()) {
                 int level = enchantments.get(enchantment);
-                int maxAllowedLevel = config.getInt("settings.max_enchantment_level", enchantment.getMaxLevel());
-                if (level > maxAllowedLevel || !enchantment.canEnchantItem(item)) {
+                if (level > enchantment.getMaxLevel() || !enchantment.canEnchantItem(item)) {
                     item.removeEnchantment(enchantment);
                 }
             }
@@ -99,7 +95,7 @@ public class Main extends JavaPlugin implements Runnable, Listener {
 
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {
-        if (config.getBoolean("settings.check_inventory") && event.getPlayer() instanceof Player) {
+        if (config.getBoolean("checks.check_inventory") && event.getPlayer() instanceof Player) {
             Inventory inventory = event.getInventory();
             for (ItemStack item : inventory.getContents()) {
                 if (item != null) {
@@ -107,5 +103,10 @@ public class Main extends JavaPlugin implements Runnable, Listener {
                 }
             }
         }
+    }
+
+    public void reloadConfig() {
+        super.reloadConfig(); 
+        config = getConfig(); 
     }
 }
