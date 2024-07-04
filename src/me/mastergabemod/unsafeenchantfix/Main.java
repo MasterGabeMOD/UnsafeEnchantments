@@ -21,13 +21,19 @@ public class Main extends JavaPlugin implements Runnable, Listener {
 
     private static Main instance;
     private FileConfiguration config;
+    private long taskDelayTicks;
+    private long taskPeriodTicks; 
+
 
     @Override
     public void onEnable() {
         instance = this;
-        saveDefaultConfig(); 
-        config = getConfig(); 
-        getServer().getScheduler().runTaskTimerAsynchronously(this, this, 100L, 100L);
+        saveDefaultConfig();
+        config = getConfig();
+        taskDelayTicks = config.getLong("task_settings.task_delay_seconds", 5) * 20; 
+        taskPeriodTicks = config.getLong("task_settings.task_period_seconds", 5) * 20; 
+        
+        getServer().getScheduler().runTaskTimerAsynchronously(this, this, taskDelayTicks, taskPeriodTicks);
         getCommand("unsafecheck").setExecutor(new UnsafeCheckCommand());
         getServer().getPluginManager().registerEvents(this, this);
     }
@@ -108,5 +114,7 @@ public class Main extends JavaPlugin implements Runnable, Listener {
     public void reloadConfig() {
         super.reloadConfig(); 
         config = getConfig(); 
+        taskDelayTicks = config.getLong("task_settings.task_delay_seconds", 5) * 20; 
+        taskPeriodTicks = config.getLong("task_settings.task_period_seconds", 5) * 20;
     }
 }

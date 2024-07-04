@@ -2,5 +2,8 @@ checks:
   enable_checks: true
   check_inventory: true
   check_potions: true
-  clear_unsafe_enchantments: false
+  clear_unsafe_enchantments: true
   max_enchantment_level: 5
+task_settings:
+  task_delay_seconds: 5 
+  task_period_seconds: 5 
