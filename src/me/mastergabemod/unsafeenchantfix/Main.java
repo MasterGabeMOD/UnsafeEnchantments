@@ -67,13 +67,26 @@ public class Main extends JavaPlugin implements Runnable, Listener {
     }
 
     private void checkAndRemoveUnsafeItem(Player player, ItemStack item) {
+        boolean itemChanged = false;
         if (item.getType() == Material.POTION && config.getBoolean("checks.check_potions")) {
             if (!isVanillaPotion(item)) {
                 player.getInventory().remove(item);
                 player.getInventory().addItem(new ItemStack(Material.GLASS_BOTTLE));
+                itemChanged = true;
             }
         } else if (config.getBoolean("checks.clear_unsafe_enchantments")) {
-            clearUnsafeEnchantments(item);
+            Map<Enchantment, Integer> enchantments = item.getEnchantments();
+            for (Enchantment enchantment : enchantments.keySet()) {
+                int level = enchantments.get(enchantment);
+                if (level > enchantment.getMaxLevel() || !enchantment.canEnchantItem(item)) {
+                    item.removeEnchantment(enchantment);
+                    itemChanged = true;
+                }
+            }
+        }
+
+        if (itemChanged) {
+            player.updateInventory();
         }
     }
 
