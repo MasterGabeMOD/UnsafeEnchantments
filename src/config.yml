@@ -3,7 +3,16 @@ checks:
   check_inventory: true
   check_potions: true
   clear_unsafe_enchantments: true
-  max_enchantment_level: 5
+  max_enchantment_level: 5 
+  potion_checks: 
+    allowed_effects: 
+      - HEAL
+      - REGENERATION
+      - SPEED
+      - INCREASE_DAMAGE 
+    max_effect_amplifier: 3 
+    max_effect_duration_ticks: 6000 
 task_settings:
   task_delay_seconds: 5 
   task_period_seconds: 5 
+
