@@ -2,17 +2,21 @@ package me.mastergabemod.unsafeenchantfix;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.LingeringPotionSplashEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionData;
@@ -91,15 +95,24 @@ public class Main extends JavaPlugin implements Runnable, Listener {
                     itemChanged = true;
                 }
             }
+        } else if (item.getType().toString().contains("SIGN")) {
+            if (config.getBoolean("checks.check_crash_signs") && isCrashSign(item)) {
+                logSuspiciousItem(player, item, "Crash sign detected and removed.");
+                player.getInventory().remove(item);
+                itemChanged = true;
+            }
+        } else if (item.getType().toString().contains("BOOK")) {
+            if (config.getBoolean("checks.check_crash_books") && isCrashBook(item)) {
+                logSuspiciousItem(player, item, "Crash book detected and removed.");
+                player.getInventory().remove(item);
+                itemChanged = true;
+            }
         }
 
         if (itemChanged) {
             player.updateInventory();
         }
     }
-
-    
-    
     public void clearUnsafeEnchantments(ItemStack item) {
         if (item != null && item.getType() != Material.AIR) {
             Map<Enchantment, Integer> enchantments = item.getEnchantments();
@@ -111,8 +124,40 @@ public class Main extends JavaPlugin implements Runnable, Listener {
             }
         }
     }
+            
+    private boolean isCrashSign(ItemStack item) {
+        if (!(item.getItemMeta() instanceof BlockStateMeta)) return false;
 
-    
+        BlockStateMeta meta = (BlockStateMeta) item.getItemMeta();
+        if (!(meta.getBlockState() instanceof Sign)) return false;
+
+        Sign sign = (Sign) meta.getBlockState();
+        for (String line : sign.getLines()) {
+            if (line.length() > config.getInt("checks.sign_checks.max_line_length", 100) ||
+                line.matches(config.getString("checks.sign_checks.invalid_pattern", "[^\\x20-\\x7E]"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isCrashBook(ItemStack item) {
+        if (!(item.getItemMeta() instanceof BookMeta)) return false;
+
+        BookMeta meta = (BookMeta) item.getItemMeta();
+        if (meta.getPageCount() > config.getInt("checks.book_checks.max_pages", 50)) {
+            return true;
+        }
+
+        for (String page : meta.getPages()) {
+            if (page.length() > config.getInt("checks.book_checks.max_page_length", 2560) ||
+                page.matches(config.getString("checks.book_checks.invalid_pattern", "[^\\x20-\\x7E]"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean hasUnsafeEffects(ItemStack item) {
         if (!(item.getItemMeta() instanceof PotionMeta)) {
             return true;
@@ -137,7 +182,6 @@ public class Main extends JavaPlugin implements Runnable, Listener {
                effect.getDuration() <= maxDuration;
     }
 
-
     private void logSuspiciousItem(Player player, ItemStack item, String reason) {
         getLogger().warning("Player " + player.getName() + " had an item removed: " + item.toString() + ". Reason: " + reason);
     }
@@ -153,6 +197,17 @@ public class Main extends JavaPlugin implements Runnable, Listener {
     }
 
     @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
+        if (config.getBoolean("checks.check_crash_signs") && event.getBlock().getType().toString().contains("SIGN")) {
+            ItemStack item = event.getItemInHand();
+            if (isCrashSign(item)) {
+                event.setCancelled(true);
+                logSuspiciousItem(event.getPlayer(), item, "Attempted to place a crash sign.");
+            }
+        }
+    }
+
+    @EventHandler
     public void onInventoryOpen(InventoryOpenEvent event) {
         if (config.getBoolean("checks.check_inventory") && event.getPlayer() instanceof Player) {
             Inventory inventory = event.getInventory();
@@ -163,7 +218,7 @@ public class Main extends JavaPlugin implements Runnable, Listener {
             }
         }
     }
-
+    
     @EventHandler
     public void onPotionSplash(PotionSplashEvent event) {
         if (config.getBoolean("checks.check_potions")) {
