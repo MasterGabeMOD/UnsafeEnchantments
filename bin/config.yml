@@ -3,7 +3,9 @@ checks:
   check_inventory: true
   check_potions: true
   clear_unsafe_enchantments: true
-  max_enchantment_level: 5 
+  max_enchantment_level: 5
+  
+  # Potion checks
   potion_checks: 
     allowed_effects: 
       - HEAL
@@ -12,7 +14,29 @@ checks:
       - INCREASE_DAMAGE 
     max_effect_amplifier: 3 
     max_effect_duration_ticks: 6000 
+  
+  # Firework checks
+  check_fireworks: true
+  firework_checks:
+    max_flight_duration: 3  # Max allowed flight duration for fireworks (1-3)
+    allowed_effects:
+      - BALL
+      - STAR
+      - BURST
+
+  # Sign checks
+  check_crash_signs: true
+  sign_checks:
+    max_line_length: 100 # Maximum length of a single line on a sign
+    invalid_pattern: "[^\\x20-\\x7E]" 
+  
+  # Book checks
+  check_crash_books: true
+  book_checks:
+    max_pages: 50 # Maximum number of pages allowed in a book
+    max_page_length: 2560 # Maximum number of characters per page
+    invalid_pattern: "[^\\x20-\\x7E]" 
+
 task_settings:
   task_delay_seconds: 5 
-  task_period_seconds: 5 
-
+  task_period_seconds: 5

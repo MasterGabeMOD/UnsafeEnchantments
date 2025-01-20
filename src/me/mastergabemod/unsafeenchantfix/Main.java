@@ -1,6 +1,7 @@
 package me.mastergabemod.unsafeenchantfix;
 
 import org.bukkit.Bukkit;
+import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,6 +18,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionData;
@@ -77,6 +79,14 @@ public class Main extends JavaPlugin implements Runnable, Listener {
     private void checkAndRemoveUnsafeItem(Player player, ItemStack item) {
         boolean itemChanged = false;
 
+        if (item.getType() == Material.FIREWORK_ROCKET) {
+            if (config.getBoolean("checks.check_fireworks") && isUnobtainableFirework(item)) {
+                logSuspiciousItem(player, item, "Illegal firework detected and removed.");
+                player.getInventory().remove(item);
+                itemChanged = true;
+            }
+        }
+
         if (item.getType() == Material.POTION || item.getType() == Material.SPLASH_POTION || item.getType() == Material.LINGERING_POTION) {
             if (config.getBoolean("checks.check_potions")) {
                 if (!isVanillaPotion(item) || hasUnsafeEffects(item)) {
@@ -113,6 +123,30 @@ public class Main extends JavaPlugin implements Runnable, Listener {
             player.updateInventory();
         }
     }
+
+    private boolean isUnobtainableFirework(ItemStack item) {
+        if (item.getType() != Material.FIREWORK_ROCKET) return false;
+
+        FireworkMeta meta = (FireworkMeta) item.getItemMeta();
+        if (meta == null) return false;
+
+        int maxFlightDuration = config.getInt("checks.firework_checks.max_flight_duration", 3);
+        int flightDuration = meta.getPower();
+        if (flightDuration < 1 || flightDuration > maxFlightDuration) {
+            return true; 
+        }
+
+        List<FireworkEffect> effects = meta.getEffects();
+        List<String> allowedEffects = config.getStringList("checks.firework_checks.allowed_effects");
+        for (FireworkEffect effect : effects) {
+            if (!allowedEffects.contains(effect.getType().name())) {
+                return true; 
+            }
+        }
+
+        return false;
+    }
+
     public void clearUnsafeEnchantments(ItemStack item) {
         if (item != null && item.getType() != Material.AIR) {
             Map<Enchantment, Integer> enchantments = item.getEnchantments();
@@ -124,7 +158,7 @@ public class Main extends JavaPlugin implements Runnable, Listener {
             }
         }
     }
-            
+
     private boolean isCrashSign(ItemStack item) {
         if (!(item.getItemMeta() instanceof BlockStateMeta)) return false;
 
@@ -218,7 +252,7 @@ public class Main extends JavaPlugin implements Runnable, Listener {
             }
         }
     }
-    
+
     @EventHandler
     public void onPotionSplash(PotionSplashEvent event) {
         if (config.getBoolean("checks.check_potions")) {
@@ -247,4 +281,5 @@ public class Main extends JavaPlugin implements Runnable, Listener {
         taskDelayTicks = config.getLong("task_settings.task_delay_seconds", 5) * 20;
         taskPeriodTicks = config.getLong("task_settings.task_period_seconds", 5) * 20;
     }
+
 }

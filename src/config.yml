@@ -15,6 +15,15 @@ checks:
     max_effect_amplifier: 3 
     max_effect_duration_ticks: 6000 
   
+  # Firework checks
+  check_fireworks: true
+  firework_checks:
+    max_flight_duration: 3  # Max allowed flight duration for fireworks (1-3)
+    allowed_effects:
+      - BALL
+      - STAR
+      - BURST
+
   # Sign checks
   check_crash_signs: true
   sign_checks:
