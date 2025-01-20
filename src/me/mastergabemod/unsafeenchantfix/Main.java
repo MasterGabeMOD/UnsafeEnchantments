@@ -25,6 +25,7 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -196,8 +197,11 @@ public class Main extends JavaPlugin implements Runnable, Listener {
         if (!(item.getItemMeta() instanceof PotionMeta)) {
             return true;
         }
-
         PotionMeta meta = (PotionMeta) item.getItemMeta();
+        if (!meta.hasCustomEffects()) {
+            return false;
+        }
+
         for (PotionEffect effect : meta.getCustomEffects()) {
             if (!isSafeEffect(effect)) {
                 return true;
@@ -205,6 +209,7 @@ public class Main extends JavaPlugin implements Runnable, Listener {
         }
         return false;
     }
+
 
     private boolean isSafeEffect(PotionEffect effect) {
         List<String> allowedEffects = config.getStringList("checks.potion_checks.allowed_effects");
@@ -226,9 +231,9 @@ public class Main extends JavaPlugin implements Runnable, Listener {
         }
         PotionMeta meta = (PotionMeta) item.getItemMeta();
         PotionData data = meta.getBasePotionData();
-        PotionType type = data.getType();
-        return type == PotionType.AWKWARD || type == PotionType.MUNDANE || type == PotionType.THICK || type == PotionType.WATER;
+        return Arrays.asList(PotionType.values()).contains(data.getType());
     }
+
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {

@@ -1,7 +1,7 @@
 name: UnsafeEnchantments
 main: me.mastergabemod.unsafeenchantfix.Main
-version: 1.5
-api-version: 1.20
+version: 1.6
+api-version: 1.21
 author: MasterGabeMOD
 commands:
   unsafecheck:
