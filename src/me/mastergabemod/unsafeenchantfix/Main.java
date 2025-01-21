@@ -3,6 +3,7 @@ package me.mastergabemod.unsafeenchantfix;
 import org.bukkit.Bukkit;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
+import org.bukkit.block.Container;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -14,6 +15,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.LingeringPotionSplashEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
@@ -118,11 +120,48 @@ public class Main extends JavaPlugin implements Runnable, Listener {
                 player.getInventory().remove(item);
                 itemChanged = true;
             }
+        } else if (isCrashContainer(item)) {
+            if (config.getBoolean("checks.check_crash_chests")) {
+                logSuspiciousItem(player, item, "Crash chest or shulker box detected and removed.");
+                player.getInventory().remove(item);
+                itemChanged = true;
+            }
         }
 
         if (itemChanged) {
             player.updateInventory();
         }
+    }
+    
+    private boolean isCrashContainer(ItemStack item) {
+        if (!(item.getItemMeta() instanceof BlockStateMeta)) return false;
+
+        BlockStateMeta meta = (BlockStateMeta) item.getItemMeta();
+        if (!(meta.getBlockState() instanceof Container)) return false;
+
+        Container container = (Container) meta.getBlockState();
+        Inventory inventory = container.getInventory();
+
+        int maxItemStackSize = config.getInt("checks.container_checks.max_item_stack_size", 64);
+        for (ItemStack content : inventory.getContents()) {
+            if (content != null) {
+                if (content.getAmount() > maxItemStackSize || hasUnsafeNBT(content)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private boolean hasUnsafeNBT(ItemStack item) {
+        if (item.hasItemMeta() && item.getItemMeta().hasCustomModelData()) {
+            int modelData = item.getItemMeta().getCustomModelData();
+            int maxModelData = config.getInt("checks.container_checks.max_custom_model_data", 1000);
+            if (modelData > maxModelData) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isUnobtainableFirework(ItemStack item) {
@@ -256,7 +295,18 @@ public class Main extends JavaPlugin implements Runnable, Listener {
                 }
             }
         }
+        if (config.getBoolean("checks.check_crash_chests") && event.getInventory().getType() == InventoryType.CHEST) {
+            Inventory inventory = event.getInventory();
+            for (ItemStack item : inventory.getContents()) {
+                if (item != null && isCrashContainer(item)) {
+                    event.setCancelled(true);
+                    logSuspiciousItem((Player) event.getPlayer(), item, "Illegal chest or shulker box detected in inventory.");
+                    break;
+                }
+            }
+        }
     }
+
 
     @EventHandler
     public void onPotionSplash(PotionSplashEvent event) {

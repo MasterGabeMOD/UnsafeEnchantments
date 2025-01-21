@@ -39,6 +39,12 @@ checks:
     max_page_length: 2560 # Maximum number of characters per page
     invalid_pattern: "[^\\x20-\\x7E]" 
 
+  # Container checks
+  check_crash_chests: true
+  container_checks:
+    max_item_stack_size: 64
+    max_custom_model_data: 1000
+
 task_settings:
   task_delay_seconds: 5 
   task_period_seconds: 5
