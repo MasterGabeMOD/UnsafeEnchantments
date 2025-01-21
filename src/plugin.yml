@@ -3,6 +3,7 @@ main: me.mastergabemod.unsafeenchantfix.Main
 version: 1.6
 api-version: 1.21
 author: MasterGabeMOD
+depend: [NBTAPI]
 commands:
   unsafecheck:
     description: "Manually check an item for unsafe enchantments or reload the plugin configuration"

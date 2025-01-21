@@ -4,47 +4,89 @@ checks:
   check_potions: true
   clear_unsafe_enchantments: true
   max_enchantment_level: 5
-  
-  # Potion checks
-  potion_checks: 
-    allowed_effects: 
+
+  # ---------------------------------------------------------
+  # ATTRIBUTE MODIFIER CHECKS
+  # ---------------------------------------------------------
+  check_attribute_modifiers: true
+  attribute_checks:
+    only_allow_listed: true
+    allowed_attributes:
+      - GENERIC_MOVEMENT_SPEED
+      - GENERIC_ATTACK_DAMAGE
+      - GENERIC_ATTACK_SPEED
+      - GENERIC_ARMOR
+      - GENERIC_ARMOR_TOUGHNESS
+
+    max_attribute_amounts:
+      GENERIC_MOVEMENT_SPEED: 0.2
+      GENERIC_ATTACK_DAMAGE: 10.0
+
+    # Operations: ADD_NUMBER, ADD_SCALAR, MULTIPLY_SCALAR_1
+    allowed_operations:
+      - ADD_NUMBER
+      - MULTIPLY_SCALAR_1
+
+  # ---------------------------------------------------------
+  # POTION CHECKS
+  # ---------------------------------------------------------
+  potion_checks:
+    allowed_effects:
       - HEAL
       - REGENERATION
       - SPEED
       - INCREASE_DAMAGE
       - STRENGTH
       - NIGHT_VISION
-    max_effect_amplifier: 3 
-    max_effect_duration_ticks: 6000 
-  
-  # Firework checks
+    max_effect_amplifier: 3
+    max_effect_duration_ticks: 6000
+    # Limit how many custom effects a potion can have
+    max_effect_count: 3
+
+  # ---------------------------------------------------------
+  # FIREWORK CHECKS
+  # ---------------------------------------------------------
   check_fireworks: true
   firework_checks:
-    max_flight_duration: 3  # Max allowed flight duration for fireworks (1-3)
+    max_flight_duration: 3
     allowed_effects:
       - BALL
       - STAR
       - BURST
 
-  # Sign checks
+  # ---------------------------------------------------------
+  # SIGN CHECKS
+  # ---------------------------------------------------------
   check_crash_signs: true
   sign_checks:
-    max_line_length: 100 # Maximum length of a single line on a sign
-    invalid_pattern: "[^\\x20-\\x7E]" 
-  
-  # Book checks
+    max_line_length: 100
+    invalid_pattern: "[^\\x20-\\x7E]"
+
+  # ---------------------------------------------------------
+  # BOOK CHECKS
+  # ---------------------------------------------------------
   check_crash_books: true
   book_checks:
-    max_pages: 50 # Maximum number of pages allowed in a book
-    max_page_length: 2560 # Maximum number of characters per page
-    invalid_pattern: "[^\\x20-\\x7E]" 
+    max_pages: 50
+    max_page_length: 2560
+    invalid_pattern: "[^\\x20-\\x7E]"
 
-  # Container checks
+  # ---------------------------------------------------------
+  # CONTAINER CHECKS
+  # ---------------------------------------------------------
   check_crash_chests: true
   container_checks:
     max_item_stack_size: 64
     max_custom_model_data: 1000
 
+  # ---------------------------------------------------------
+  # NEW: GENERAL NBT CHECKS FOR ALL ITEMS
+  # ---------------------------------------------------------
+  # If true, scan top level NBT tags on any item.
+  check_all_item_nbt: true
+  # Max number of top level NBT keys allowed
+  max_nbt_keys: 10
+
 task_settings:
-  task_delay_seconds: 5 
+  task_delay_seconds: 5
   task_period_seconds: 5
